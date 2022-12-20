@@ -138,6 +138,9 @@ void loadDataWithAssimp(const std::string& path) {
 
 			aiNode* current = pair.second;
 			glm::mat4 parentMatrix = pair.first;
+            // First line : small bear
+            //glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.005f));
+            // Second line : default
 			glm::mat4 model = parentMatrix * glm::make_mat4((float*)&current->mTransformation);
 			std::cerr << "model:" << glm::to_string(model) << std::endl;
 			for (int i = 0; i < current->mNumMeshes; ++i) {

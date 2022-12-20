@@ -11,10 +11,13 @@
 struct Material {
 	// Shader program
 	GLuint m_program;
+    GLuint m_cubemap;
+    GLuint m_skybox;
 
 	// Material parameters
 	glm::vec4 m_color;
 	GLint m_texture;
+    GLint m_normalmap;
 
 	inline void check() {
 		if (m_program == 0) {
@@ -41,6 +44,8 @@ struct Material {
 	GLint getAttribute(const std::string& in_attributeName);
 
 	GLint getUniform(const std::string& in_uniformName);
+
+    void internalBindCube();
 };
 
 #endif

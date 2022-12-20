@@ -17,10 +17,11 @@ Material::~Material() {
 void Material::init() {
 	// TODO : Change shader by your
 	m_program = load_shaders("shaders/unlit/vertex.glsl", "shaders/unlit/fragment.glsl");
-	check();
+    check();
 	// TODO : set initial parameters
 	m_color = {1.0, 1.0, 1.0, 1.0};
 	m_texture = 0;
+    m_normalmap = 0;
 }
 
 void Material::clear() {
@@ -38,13 +39,16 @@ void Material::internalBind() {
 	// bind parameters
 	GLint color = getUniform("color");
 	glUniform4fv(color, 1, glm::value_ptr(m_color));
-	if (m_texture != -1) {
-		glBindTexture(GL_TEXTURE_2D, m_texture);
+	if (m_texture != 0) {
 		glActiveTexture(GL_TEXTURE0);
-		glUniform1i(getUniform("colorTexture"), GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_texture);
+		glUniform1i(getUniform("colorTexture"), 0);
 	}
-
-	// TODO : Add your custom parameters here
+    if (m_normalmap != 0) {
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_normalmap);
+        glUniform1i(getUniform("normalMap"), 1);
+    }
 }
 
 void Material::setMatrices(glm::mat4& projectionMatrix, glm::mat4& viewMatrix, glm::mat4& modelMatrix)

@@ -26,7 +26,7 @@
 #include "Keyboard.h"
 #include "SceneLoader.h"
 
-
+#include "Texture.h"
 
 
 // -------------------------------------------
@@ -37,7 +37,7 @@ static GLint window;
 
 void init() {
 	// Context::camera.initPos();
-	Context::camera.resize(SCREENWIDTH, SCREENHEIGHT);
+    Context::camera.resize(SCREENWIDTH, SCREENHEIGHT);
 	glCullFace (GL_BACK);
 	glEnable (GL_CULL_FACE);
 	glDepthFunc (GL_LESS);
@@ -50,6 +50,8 @@ void init() {
 		fprintf(stderr, "Failed to initialize GLEW\n");
 		return;
 	}
+
+
 }
 
 void beforeLoop() {
@@ -65,11 +67,164 @@ void beforeLoop() {
 		Context::camera.view = Context::camera.getViewMatrix();
 	}
 
+    for (Material * m:Context::materials) {
+        m->m_texture = loadTexture2DFromFilePath("./data/BoomBox_baseColor.png");
+        m->m_normalmap = loadTexture2DFromFilePath("./data/BoomBox_normal.png");
+    }
+
+    /*
+    std::vector<std::string> faces;
+    {
+        "./data/arctic/arctic_bk.png",
+        "./data/arctic/arctic_dn.png",
+        "./data/arctic/arctic_ft.png",
+        "./data/arctic/arctic_if.png",
+        "./data/arctic/arctic_rt.png",
+        "./data/arctic/arctic_up.png";
+    };
+    unsigned int cubemapTexture = loadCubemap(faces);
+    */
+
 	// std::cerr << "projection:" << glm::to_string(Context::camera::projection) << std::endl;
 	// std::cerr << "view:" << glm::to_string(Context::camera::view) << std::endl;
 
 }
 
+void internalBindCube() {
+    float cubeVertices[] = {
+            // positions          // texture Coords
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+    };
+    // cube VAO
+    unsigned int cubeVAO, cubeVBO;
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+    glBindVertexArray(cubeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    // cubes
+    glBindVertexArray(cubeVAO);
+    glActiveTexture(GL_TEXTURE0);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+}
+
+void internalBindSkybox(){
+    float skyboxVertices[] = {
+            // positions
+            -1.0f,  1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+
+            -1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f,  1.0f,
+            -1.0f, -1.0f,  1.0f,
+
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+
+            -1.0f, -1.0f,  1.0f,
+            -1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f,  1.0f,
+
+            -1.0f,  1.0f, -1.0f,
+            1.0f,  1.0f, -1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            -1.0f,  1.0f,  1.0f,
+            -1.0f,  1.0f, -1.0f,
+
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f,  1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f,  1.0f,
+            1.0f, -1.0f,  1.0f
+    };
+    // skybox VAO
+    unsigned int skyboxVAO, skyboxVBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    std::vector<std::string> faces
+    {
+        "./data/arctic/arctic_bk.png",
+        "./data/arctic/arctic_dn.png",
+        "./data/arctic/arctic_ft.png",
+        "./data/arctic/arctic_lf.png",
+        "./data/arctic/arctic_rt.png",
+        "./data/arctic/arctic_up.png"
+    };
+    unsigned int cubemapTexture = loadCubemap(faces);
+    // skybox cube
+    glBindVertexArray(skyboxVAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+    glDepthFunc(GL_LESS);
+}
 
 void draw() {
 	if (Context::refreshMatrices) {
@@ -89,6 +244,9 @@ void draw() {
 		material->setMatrices(Context::camera.projection, Context::camera.view, inst.matrix);
 		mesh->draw();
 	}
+
+    //internalBindCube();
+    //internalBindSkybox();
 }
 
 
@@ -98,9 +256,6 @@ void display() {
 	glFlush();
 	glutSwapBuffers();
 }
-
-
-
 
 int main (int argc, char ** argv) {
 	if (argc < 2) {
@@ -123,6 +278,13 @@ int main (int argc, char ** argv) {
 
 	std::string path(argv[1]);
 	loadDataWithAssimp(path);
+    /*
+    GLuint m_cubemap = load_shaders("shaders/unlit/cubemap_vertex.glsl", "shaders/unlit/cubemap_frag.glsl");
+    if (m_cubemap == 0) {
+        throw std::runtime_error("Shader program not initialized");
+    }
+    glUseProgram(m_cubemap);
+    */
 	beforeLoop();
 
 	// Dark blue background
