@@ -8,24 +8,34 @@
 #include <string>
 #include <stdexcept>
 
+#include "Texture.h"
+
 struct Material {
 	// Shader program
 	GLuint m_program;
-    GLuint m_cubemap;
-    GLuint m_skybox;
+    GLuint m_cube;
 
 	// Material parameters
 	glm::vec4 m_color;
 	GLint m_texture;
     GLint m_normalmap;
+    GLint m_metalmap;
+    GLint m_roughmap;
+    GLint m_AOmap;
+    GLint m_metaltexture;
+    GLint m_metalnormalmap;
+    GLint m_skybox;
+
+    unsigned int cubeVAO;
+    unsigned int skyboxVAO;
 
 	inline void check() {
-		if (m_program == 0) {
+		if (m_program == 0 || m_cube == 0) {
 			throw std::runtime_error("Shader program not initialized");
 		}
 	}
 
-	Material(): m_program(0) {
+	Material(): m_program(0),m_cube(0) {
 
 	}
 
@@ -35,7 +45,7 @@ struct Material {
 
 	virtual void clear();
 
-	void bind();
+	void bind(int shader);
 
 	virtual void internalBind();
 

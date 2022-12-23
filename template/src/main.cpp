@@ -54,106 +54,51 @@ void init() {
 
 }
 
-void beforeLoop() {
-	// Take first instance center as target
-	if (!Context::instances.empty()) {
-		glm::vec3 centerOfInstance0 = Context::instances.at(0).mesh->center;
-		std::cerr << glm::to_string(centerOfInstance0) << std::endl;
-
-		glm::vec3 target(Context::instances.at(0).matrix * glm::vec4(centerOfInstance0, 1.0));
-		Context::camera.position = glm::vec3(0.5,0.5,0.5);
-		Context::camera.target = target;//lookat
-		Context::camera.forward = glm::normalize(target - Context::camera.position);
-		Context::camera.view = Context::camera.getViewMatrix();
-	}
-
-    for (Material * m:Context::materials) {
-        m->m_texture = loadTexture2DFromFilePath("./data/BoomBox_baseColor.png");
-        m->m_normalmap = loadTexture2DFromFilePath("./data/BoomBox_normal.png");
-    }
-
-    /*
-    std::vector<std::string> faces;
-    {
-        "./data/arctic/arctic_bk.png",
-        "./data/arctic/arctic_dn.png",
-        "./data/arctic/arctic_ft.png",
-        "./data/arctic/arctic_if.png",
-        "./data/arctic/arctic_rt.png",
-        "./data/arctic/arctic_up.png";
-    };
-    unsigned int cubemapTexture = loadCubemap(faces);
-    */
-
-	// std::cerr << "projection:" << glm::to_string(Context::camera::projection) << std::endl;
-	// std::cerr << "view:" << glm::to_string(Context::camera::view) << std::endl;
-
-}
-
-void internalBindCube() {
+void internalBindSkybox(Material * m){
     float cubeVertices[] = {
-            // positions          // texture Coords
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+            // positions
+            -1.0f,  1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
 
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f,  1.0f,
+            -1.0f, -1.0f,  1.0f,
 
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
 
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -1.0f, -1.0f,  1.0f,
+            -1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f,  1.0f,
 
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -1.0f,  1.0f, -1.0f,
+            1.0f,  1.0f, -1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            -1.0f,  1.0f,  1.0f,
+            -1.0f,  1.0f, -1.0f,
 
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f,  1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f,  1.0f,
+            1.0f, -1.0f,  1.0f
     };
-    // cube VAO
-    unsigned int cubeVAO, cubeVBO;
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &cubeVBO);
-    glBindVertexArray(cubeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    // cubes
-    glBindVertexArray(cubeVAO);
-    glActiveTexture(GL_TEXTURE0);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
-}
-
-void internalBindSkybox(){
     float skyboxVertices[] = {
             // positions
             -1.0f,  1.0f, -1.0f,
@@ -198,32 +143,120 @@ void internalBindSkybox(){
             -1.0f, -1.0f,  1.0f,
             1.0f, -1.0f,  1.0f
     };
+
+    // cube VAO
+    unsigned int cubeVBO;
+    glGenVertexArrays(1, &m->cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+    glBindVertexArray(m->cubeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     // skybox VAO
-    unsigned int skyboxVAO, skyboxVBO;
-    glGenVertexArrays(1, &skyboxVAO);
+    unsigned int skyboxVBO;
+    glGenVertexArrays(1, &m->skyboxVAO);
     glGenBuffers(1, &skyboxVBO);
-    glBindVertexArray(skyboxVAO);
+    glBindVertexArray(m->skyboxVAO);
     glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+}
+
+void beforeLoop() {
+	// Take first instance center as target
+	if (!Context::instances.empty()) {
+		glm::vec3 centerOfInstance0 = Context::instances.at(0).mesh->center;
+		std::cerr << glm::to_string(centerOfInstance0) << std::endl;
+
+		glm::vec3 target(Context::instances.at(0).matrix * glm::vec4(centerOfInstance0, 1.0));
+		Context::camera.position = glm::vec3(0.5,0.5,0.5);
+		Context::camera.target = target;//lookat
+		Context::camera.forward = glm::normalize(target - Context::camera.position);
+		Context::camera.view = Context::camera.getViewMatrix();
+	}
+
+    for (Material * m:Context::materials) {
+        /*
+        m->m_texture = loadTexture2DFromFilePath("./data/BoomBox_baseColor.png");
+        m->m_normalmap = loadTexture2DFromFilePath("./data/BoomBox_normal.png");
+        m->m_metalmap = loadTexture2DFromFilePath("./data/rustediron2_metallic.png");
+        m->m_roughmap = loadTexture2DFromFilePath("./data/rustediron2_roughness.png");
+        m->m_metaltexture = loadTexture2DFromFilePath("./data/rustediron2_basecolor.png");
+        m->m_metalnormalmap = loadTexture2DFromFilePath("./data/rustediron2_normal.png");
+        */
+        m->m_texture = loadTexture2DFromFilePath("./data/BarramundiFish_baseColor.png");
+        //m->m_texture = loadTexture2DFromFilePath("./data/stylized-beast-fur-bl/stylized-beast-fur_albedo.png");
+        m->m_normalmap = loadTexture2DFromFilePath("./data/BarramundiFish_normal.png");
+        m->m_metalmap = loadTexture2DFromFilePath("./data/stylized-beast-fur-bl/stylized-beast-fur_metallic.png");
+        //m->m_roughmap = loadTexture2DFromFilePath("./data/stylized-beast-fur-bl/stylized-beast-fur_roughness.png");
+        m->m_roughmap = loadTexture2DFromFilePath("./data/rustediron2_roughness.png");
+        m->m_AOmap = loadTexture2DFromFilePath("./data/BarramundiFish_occlusionRoughnessMetallic.png");
+
+        std::vector<std::string> faces
+                {
+                        "./data/skybox/frozen_bk.png",
+                        "./data/skybox/frozen_ft.png",
+                        "./data/skybox/frozen_up.png",
+                        "./data/skybox/frozen_dn.png",
+                        "./data/skybox/frozen_lf.png",
+                        "./data/skybox/frozen_rt.png"
+                };
+        m->m_skybox = loadCubemap(faces);
+        internalBindSkybox(m);
+    }
+
+    /*
     std::vector<std::string> faces
     {
-        "./data/arctic/arctic_bk.png",
-        "./data/arctic/arctic_dn.png",
-        "./data/arctic/arctic_ft.png",
-        "./data/arctic/arctic_lf.png",
-        "./data/arctic/arctic_rt.png",
-        "./data/arctic/arctic_up.png"
+        "./data/skybox/arctic_bk.png",
+        "./data/skybox/arctic_ft.png",
+        "./data/skybox/arctic_up.png",
+        "./data/skybox/arctic_dn.png",
+        "./data/skybox/arctic_lf.png",
+        "./data/skybox/arctic_rt.png"
     };
-    unsigned int cubemapTexture = loadCubemap(faces);
-    // skybox cube
-    glBindVertexArray(skyboxVAO);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
-    glDepthFunc(GL_LESS);
+    m->m_skybox = loadCubemap(faces);
+    */
+
+    /*
+    std::vector<std::string> faces
+    {
+        "./data/skybox/frozen_bk.png",
+        "./data/skybox/frozen_ft.png",
+        "./data/skybox/frozen_up.png",
+        "./data/skybox/frozen_dn.png",
+        "./data/skybox/frozen_lf.png",
+        "./data/skybox/frozen_rt.png"
+    };
+    m->m_skybox = loadCubemap(faces);
+    */
+
+    /*
+    std::vector<std::string> faces
+    {
+        "./data/skybox/midnight-silence_bk.png",
+        "./data/skybox/midnight-silence_ft.png",
+        "./data/skybox/midnight-silence_up.png",
+        "./data/skybox/midnight-silence_dn.png",
+        "./data/skybox/midnight-silence_lf.png",
+        "./data/skybox/midnight-silence_rt.png"
+    };
+    m->m_skybox = loadCubemap(faces);
+    */
+
+    std::vector<std::string> faces
+    {
+        "./data/skybox/midnight-silence_bk.png",
+        "./data/skybox/midnight-silence_ft.png",
+        "./data/skybox/midnight-silence_up.png",
+        "./data/skybox/midnight-silence_dn.png",
+        "./data/skybox/midnight-silence_lf.png",
+        "./data/skybox/midnight-silence_rt.png"
+    };
 }
 
 void draw() {
@@ -240,15 +273,13 @@ void draw() {
 		Instance& inst = Context::instances[i];
 		Material* material = inst.material;
 		Mesh* mesh = inst.mesh;
-		material->bind();
+		material->bind(0);
 		material->setMatrices(Context::camera.projection, Context::camera.view, inst.matrix);
 		mesh->draw();
+        material->bind(1);
+        material->setMatrices(Context::camera.projection, Context::camera.view, inst.matrix);
 	}
-
-    //internalBindCube();
-    //internalBindSkybox();
 }
-
 
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -266,7 +297,6 @@ int main (int argc, char ** argv) {
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	glutInitWindowSize(SCREENWIDTH, SCREENHEIGHT);
 	window = glutCreateWindow("TP");
-
 	init();
 	glutIdleFunc(idle);
 	glutDisplayFunc(display);
@@ -278,13 +308,6 @@ int main (int argc, char ** argv) {
 
 	std::string path(argv[1]);
 	loadDataWithAssimp(path);
-    /*
-    GLuint m_cubemap = load_shaders("shaders/unlit/cubemap_vertex.glsl", "shaders/unlit/cubemap_frag.glsl");
-    if (m_cubemap == 0) {
-        throw std::runtime_error("Shader program not initialized");
-    }
-    glUseProgram(m_cubemap);
-    */
 	beforeLoop();
 
 	// Dark blue background

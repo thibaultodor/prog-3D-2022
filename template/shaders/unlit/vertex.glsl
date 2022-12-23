@@ -17,7 +17,6 @@ out vec3 TangentLightPos;
 out vec3 TangentViewPos;
 out vec3 TangentFragPos;
 
-
 void main() {
   mat3 normalMatrix = mat3(transpose(inverse(model)));
   o_uv0[0] = uv0[0];
@@ -28,8 +27,7 @@ void main() {
   o_normalWorld = normalMatrix * normal;
   gl_Position = projection * view * positionWorld;
 
-  // Take from LearnOpenGL //
-  vec3 lightPos = vec3(-3,1,5);
+  vec3 lightPos = vec3(3,1,-5);
   vec3 T = normalize(normalMatrix * tangent);
   vec3 N = normalize(normalMatrix * normal);
   T = normalize(T - dot(T, N) * N);
